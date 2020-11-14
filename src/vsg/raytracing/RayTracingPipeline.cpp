@@ -153,10 +153,13 @@ RayTracingPipeline::Implementation::Implementation(Context& context, RayTracingP
     if (result == VK_SUCCESS)
     {
         auto rayTracingProperties = _device->getPhysicalDevice()->getProperties<VkPhysicalDeviceRayTracingPropertiesNV, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_NV>();
-        const uint32_t shaderGroupHandleSize = rayTracingProperties.shaderGroupHandleSize;
-        const uint32_t sbtSize = shaderGroupHandleSize * pipelineInfo.groupCount;
+        uint32_t shaderGroupHandleSize = rayTracingProperties.shaderGroupHandleSize;
+        uint32_t shaderGroupBaseAlignment = rayTracingProperties.shaderGroupBaseAlignment;
+        uint32_t handleSpacing = std::max(shaderGroupBaseAlignment, shaderGroupHandleSize);
+        uint32_t sbtSize = handleSpacing * pipelineInfo.groupCount;
 
-        BufferInfo bindingTableBufferInfo = context.stagingMemoryBufferPools->reserveBuffer(sbtSize, 4, VK_BUFFER_USAGE_RAY_TRACING_BIT_NV | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        BufferInfo bindingTableBufferInfo = context.stagingMemoryBufferPools->reserveBuffer(sbtSize, shaderGroupBaseAlignment, VK_BUFFER_USAGE_RAY_TRACING_BIT_NV | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+
         auto bindingTableBuffer = bindingTableBufferInfo.buffer;
         auto bindingTableMemory = bindingTableBuffer->getDeviceMemory(context.deviceID);
 
@@ -174,7 +177,7 @@ RayTracingPipeline::Implementation::Implementation(Context& context, RayTracingP
             rayTracingShaderGroups[i]->bufferInfo.buffer = bindingTableBuffer;
             rayTracingShaderGroups[i]->bufferInfo.offset = offset;
 
-            offset += shaderGroupHandleSize;
+            offset += handleSpacing;
         }
     }
     else
