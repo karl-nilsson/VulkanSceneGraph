@@ -155,7 +155,11 @@ RayTracingPipeline::Implementation::Implementation(Context& context, RayTracingP
         auto rayTracingProperties = _device->getPhysicalDevice()->getProperties<VkPhysicalDeviceRayTracingPropertiesNV, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PROPERTIES_NV>();
         uint32_t shaderGroupHandleSize = rayTracingProperties.shaderGroupHandleSize;
         uint32_t shaderGroupBaseAlignment = rayTracingProperties.shaderGroupBaseAlignment;
+#if 0
         uint32_t handleSpacing = std::max(shaderGroupBaseAlignment, shaderGroupHandleSize);
+#else
+        uint32_t handleSpacing = shaderGroupHandleSize;
+#endif
         uint32_t sbtSize = handleSpacing * pipelineInfo.groupCount;
 
         BufferInfo bindingTableBufferInfo = context.stagingMemoryBufferPools->reserveBuffer(sbtSize, shaderGroupBaseAlignment, VK_BUFFER_USAGE_RAY_TRACING_BIT_NV | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
