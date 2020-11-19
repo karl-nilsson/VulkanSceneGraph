@@ -1,0 +1,28 @@
+name: Test
+on:
+  push:
+
+env:
+  VulkanSDKVersion: 1.2.135.0
+jobs:
+  linux-build:
+    runs-on: ubuntu-latest
+    env:
+      VULKAN_SDK: $GITHUB_WORKSPACE/../$VulkanSDKVersion/x86_64
+    steps:
+    - name: env
+      run: env
+    - name: print
+      run: echo $VULKAN_SDK
+  windows-build:
+    runs-on: windows-latest
+#    env:
+#      VULKAN_SDK: C:\VulkanSDK\$VulkanSDKVersion
+    steps:
+    - name: z
+      run: echo "VULKAN_SDK=C:\VulkanSDK\$VulkanSDKVersion" >> $GITHUB_ENV
+    - name: env
+      run: env
+    - name: print
+      run: echo $VULKAN_SDK
+
